@@ -64,7 +64,13 @@
 					},
 					"snapshot": true,
 					"executorSize": "Small",
-					"driverSize": "Small"
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": "Small",
+					"numExecutors": null
 				}
 			},
 			{
@@ -426,6 +432,128 @@
 										}
 									}
 								}
+							}
+						},
+						{
+							"name": "Execute CopyData Pipeline",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Data Set Validation",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "FILE_INGESTION_COPY_FROM_ONPREM",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"fileshare_folder": {
+										"value": "@item().fileshare_folder",
+										"type": "Expression"
+									},
+									"fileshare_path": {
+										"value": "@item().fileshare_path",
+										"type": "Expression"
+									},
+									"fileshare_username": {
+										"value": "@item().fileshare_username",
+										"type": "Expression"
+									},
+									"fileshare_password_secret_name": {
+										"value": "@item().fileshare_password_secret_name",
+										"type": "Expression"
+									},
+									"ls_adls_url": {
+										"value": "@item().ls_adls_url",
+										"type": "Expression"
+									},
+									"ds_dest_folder": {
+										"value": "@item().ds_dest_folder",
+										"type": "Expression"
+									},
+									"ds_dest_container": {
+										"value": "@item().ds_dest_container",
+										"type": "Expression"
+									},
+									"fileshare_subfolder_wildcard": {
+										"value": "@item().fileshare_subfolder_wildcard",
+										"type": "Expression"
+									},
+									"fileshare_filename_wildcard": {
+										"value": "@item().fileshare_filename_wildcard",
+										"type": "Expression"
+									},
+									"is_cobol_config_present": {
+										"value": "@item().is_cobol_config_present",
+										"type": "Expression"
+									},
+									"is_headerless": {
+										"value": "@item().is_headerless",
+										"type": "Expression"
+									},
+									"numberOfHeaders": {
+										"value": "@item().numberOfHeaders",
+										"type": "Expression"
+									},
+									"numberOfFooters": {
+										"value": "@item().numberOfFooters",
+										"type": "Expression"
+									},
+									"effective_date": {
+										"value": "@item().effective_date",
+										"type": "Expression"
+									},
+									"is_compressed_file_present": {
+										"value": "@item().is_compressed_file_present",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Dataset Validation Error",
+							"type": "Fail",
+							"dependsOn": [
+								{
+									"activity": "Data Set Validation",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"message": {
+									"value": "@concat('source data set validation failed. RunID:',string(pipeline().RunId),'Details:',string(activity('Data Set Validation').output))",
+									"type": "Expression"
+								},
+								"errorCode": "DATASET_VALIDATION_ERROR"
+							}
+						},
+						{
+							"name": "DATA COPY ERROR",
+							"type": "Fail",
+							"dependsOn": [
+								{
+									"activity": "Execute CopyData Pipeline",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"message": {
+									"value": "@concat('Data Copy failed. RunID:',string(pipeline().RunId),'Details:',string(activity('Execute CopyData Pipeline').output))",
+									"type": "Expression"
+								},
+								"errorCode": "DATA_COPY_ERROR"
 							}
 						}
 					]
