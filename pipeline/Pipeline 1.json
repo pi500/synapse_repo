@@ -555,6 +555,97 @@
 								},
 								"errorCode": "DATA_COPY_ERROR"
 							}
+						},
+						{
+							"name": "If Condition - Cobol File",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Execute CopyData Pipeline",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@variables('is_cobol_config_present')",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Set varUTCDateTime2",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "varUTCDateTime",
+											"value": {
+												"value": "@pipeline().parameters.effective_date",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "Convert_Cobol_To_Csv",
+										"type": "SynapseNotebook",
+										"dependsOn": [
+											{
+												"activity": "Set varUTCDateTime2",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"notebook": {
+												"referenceName": "Csv_To_Cobol_Conversion",
+												"type": "NotebookReference"
+											},
+											"snapshot": true,
+											"executorSize": "Small",
+											"driverSize": "Small"
+										}
+									},
+									{
+										"name": "Set cobol file flag",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "Convert_Cobol_To_Csv",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "cobol_fail_flag",
+											"value": {
+												"value": "@activity('Convert_Cobol_To_Csv').output.status.output.result.exitValue",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
 						}
 					]
 				}
