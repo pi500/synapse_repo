@@ -164,7 +164,7 @@
 							}
 						},
 						{
-							"name": "Notebook2",
+							"name": "CSV_Landing_To_Historical",
 							"type": "SynapseNotebook",
 							"dependsOn": [
 								{
@@ -183,7 +183,13 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"snapshot": true
+								"notebook": {
+									"referenceName": "CSV_Landing_To_Historical",
+									"type": "NotebookReference"
+								},
+								"snapshot": true,
+								"executorSize": "Small",
+								"driverSize": "Small"
 							}
 						}
 					]
