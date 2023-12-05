@@ -643,6 +643,159 @@
 												"type": "Expression"
 											}
 										}
+									},
+									{
+										"name": "Execute Delimited File Process Pipeline_Copy1",
+										"type": "ExecutePipeline",
+										"dependsOn": [
+											{
+												"activity": "Set cobol file flag",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"pipeline": {
+												"referenceName": "Csv_Data_Load",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"adls2_account_name": {
+													"value": "@item().dp_param_adls2_account_name",
+													"type": "Expression"
+												},
+												"historical_container_name": {
+													"value": "@item().dp_param_historical_container_name",
+													"type": "Expression"
+												},
+												"landing_container_name": {
+													"value": "@item().dp_param_landing_container_name",
+													"type": "Expression"
+												},
+												"harvested_container_name": {
+													"value": "@item().dp_param_harvested_container_name",
+													"type": "Expression"
+												},
+												"metadataDBTable": {
+													"value": "@item().dp_param_metadataDBTable",
+													"type": "Expression"
+												},
+												"domain_name": {
+													"value": "@item().dp_param_domain_name",
+													"type": "Expression"
+												},
+												"ls_adls_url": {
+													"value": "@item().ls_adls_url",
+													"type": "Expression"
+												},
+												"ds_landing_folder": {
+													"value": "@item().ds_landing_folder",
+													"type": "Expression"
+												},
+												"separator": {
+													"value": "@item().separator",
+													"type": "Expression"
+												},
+												"config_container_name": {
+													"value": "@item().config_container_name",
+													"type": "Expression"
+												},
+												"is_cobol_config_present": {
+													"value": "@variables('is_cobol_config_present')",
+													"type": "Expression"
+												},
+												"is_headerless": {
+													"value": "@variables('is_headerless')",
+													"type": "Expression"
+												},
+												"numberOfHeaders": {
+													"value": "@variables('numberOfHeaders')",
+													"type": "Expression"
+												},
+												"numberOfFooters": {
+													"value": "@variables('numberOfFooters')",
+													"type": "Expression"
+												},
+												"effective_date": {
+													"value": "@pipeline().parameters.effective_date",
+													"type": "Expression"
+												},
+												"is_compressed_file_present": {
+													"value": "@if(bool(contains(item(),'is_compressed_file_present')),item().is_compressed_file_present,'false')",
+													"type": "Expression"
+												}
+											}
+										}
+									},
+									{
+										"name": "FailProcess Error Copy 1",
+										"type": "Fail",
+										"dependsOn": [
+											{
+												"activity": "Execute Delimited File Process Pipeline_Copy1",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"message": {
+												"value": "@concat('Delimiter File Process failed.RunId:', string(pipeline().RunId), 'Details:',string(activity('Execute Delimited File Process Pipeline_Copy1').output))",
+												"type": "Expression"
+											},
+											"errorCode": "DELIMITED_PROCESS_ERROR"
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "cobol_conversion_fail_check",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@variables('cobol_fail_flag')",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Fail Overall Pipeline",
+										"type": "Fail",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"message": "one or more cobol file process error",
+											"errorCode": "500"
+										}
+									},
+									{
+										"name": "Post Audit Failure 3",
+										"type": "SynapseNotebook",
+										"dependsOn": [
+											{
+												"activity": "Fail Overall Pipeline",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"snapshot": true
+										}
 									}
 								]
 							}
