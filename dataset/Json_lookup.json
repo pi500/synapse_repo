@@ -1,0 +1,34 @@
+{
+	"name": "Json_lookup",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"ls_adls_url": {
+					"value": "@dataset().storage_accounr_url",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"storage_accounr_url": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@pipeline().parameters.config_filename",
+					"type": "Expression"
+				},
+				"fileSystem": "raw"
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

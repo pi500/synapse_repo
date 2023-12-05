@@ -1,0 +1,484 @@
+{
+	"name": "Pipeline 1",
+	"properties": {
+		"activities": [
+			{
+				"name": "LoadConfigFromADLS",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "Json_lookup",
+						"type": "DatasetReference",
+						"parameters": {
+							"storage_accounr_url": {
+								"value": "@pipeline().parameters.config_storageaccount_url",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "preaudit_operations",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "LoadConfigFromADLS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "preaudit_book",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"executorSize": "Small",
+					"driverSize": "Small"
+				}
+			},
+			{
+				"name": "FConfig File Error",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "LoadConfigFromADLS",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": {
+						"value": "@concat('configuration file does not exist or cannot be accessed. RunID:',string(pipeline().RunId),'Detail:',string(activity('LoadConfigFromADLS').output))",
+						"type": "Expression"
+					},
+					"errorCode": {
+						"value": "CONFIG_FILE_ERROR",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set rerun config",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "preaudit_operations",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "rerun_config",
+					"value": {
+						"value": "@json(activity('preaudit_operations').output.status.Output.result.exitValue)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "For Each Config Item",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Set rerun config",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('rerun_config')",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Check if cobol config exists",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "is_cobol_config_present",
+								"value": {
+									"value": "@bool(contains(item(),'is_cobol_config_present'))",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Check if cobol config exists",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@variables('is_cobol_config_present')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Set variable2",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "is_cobol_config_present",
+											"value": false
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Set variable1",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "is_cobol_config_present",
+											"value": {
+												"value": "@bool(item().is_cobol_config_present)",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "Check if headerless exists",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "is_headerless",
+								"value": {
+									"value": "@bool(contains(item(),'is_headerless'))",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "If Condition2",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Check if headerless exists",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@variables('is_headerless')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Set variable6",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "is_headerless",
+											"value": false
+										}
+									},
+									{
+										"name": "Set variable7",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "Set variable6",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "numberOfHeaders",
+											"value": "1"
+										}
+									},
+									{
+										"name": "Set variable8",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "Set variable7",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "numberOfFooters",
+											"value": "1"
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Set variable3",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "is_headerless",
+											"value": {
+												"value": "@bool(item().is_headerless)",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "Set variable4",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "Set variable3",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "numberOfHeaders",
+											"value": {
+												"value": "@string(item().numberOfHeaders)",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "Set variable5",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "Set variable4",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "numberOfFooters",
+											"value": {
+												"value": "@string(item().numberOfFooters)",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "Data Set Validation",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "If Condition2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								},
+								{
+									"activity": "If Condition1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "XmlSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "XmlReadSettings",
+										"validationMode": "none",
+										"namespaces": true
+									}
+								},
+								"dataset": {
+									"referenceName": "Xml1",
+									"type": "DatasetReference",
+									"parameters": {
+										"fileshare_folder": {
+											"value": "@item().fileshare_folder",
+											"type": "Expression"
+										},
+										"fileshare_path": {
+											"value": "@item().fileshare_path",
+											"type": "Expression"
+										},
+										"fileshare_username": {
+											"value": "@item().fileshare_username",
+											"type": "Expression"
+										},
+										"fileshare_password_secret_name": {
+											"value": "@item().fileshare_password_secret_name",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"config_filename": {
+				"type": "string"
+			},
+			"config_storageaccount_url": {
+				"type": "string"
+			},
+			"effective_date": {
+				"type": "string"
+			},
+			"rerun_flag": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"varUTCDateTime": {
+				"type": "String"
+			},
+			"varUTCDateTime2": {
+				"type": "String"
+			},
+			"is_cobol_config_present": {
+				"type": "Boolean",
+				"defaultValue": false
+			},
+			"numberOfHeaders": {
+				"type": "String",
+				"defaultValue": "1"
+			},
+			"numberOfFooters": {
+				"type": "String",
+				"defaultValue": "1"
+			},
+			"cobol_fail_flag": {
+				"type": "String",
+				"defaultValue": "false"
+			},
+			"rerun_config": {
+				"type": "String"
+			},
+			"is_headerless": {
+				"type": "Boolean",
+				"defaultValue": false
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-12-05T14:21:36Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

@@ -1,0 +1,50 @@
+{
+	"name": "Xml1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage2",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"fileshare_password_secretname_secretname": {
+					"value": "@dataset().fileshare_password_secret_name",
+					"type": "Expression"
+				},
+				"fileshare_path": {
+					"value": "@dataset().fileshare_path",
+					"type": "Expression"
+				},
+				"fileshare_username": {
+					"value": "@dataset().fileshare_username",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"fileshare_folder": {
+				"type": "string"
+			},
+			"fileshare_path": {
+				"type": "string"
+			},
+			"fileshare_username": {
+				"type": "string"
+			},
+			"fileshare_password_secret_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Xml",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "boo.xml",
+				"fileSystem": {
+					"value": "@dataset().fileshare_folder",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}
