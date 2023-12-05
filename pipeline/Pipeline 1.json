@@ -832,6 +832,64 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "Post Audit Complted",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "For Each Config Item",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "Generate_Audit_Metadata",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"executorSize": "Small",
+					"driverSize": "Small"
+				}
+			},
+			{
+				"name": "Post Audit Failure",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "For Each Config Item",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "Generate_Audit_Metadata",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"executorSize": "Small",
+					"driverSize": "Small"
+				}
 			}
 		],
 		"parameters": {
