@@ -1,0 +1,542 @@
+{
+	"name": "Notebook 1",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "newpool5434",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "2be2b0a2-261a-4ff2-80e0-d40c0f9a1e9f"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/newpool5434",
+				"name": "newpool5434",
+				"type": "Spark",
+				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/newpool5434",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"df = spark.read.csv(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\", header=True)\r\n",
+					"df.show()\r\n",
+					""
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"from pyspark import SparkContext\r\n",
+					"# Create SparkContext\r\n",
+					"#sc = SparkContext(\"local\", \"CSV to RDD\")\r\n",
+					"\r\n",
+					"# Read CSV file into RDD\r\n",
+					"rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"# Show RDD elements\r\n",
+					"rdd.take(5) "
+				],
+				"execution_count": 40
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\"piyush\"\""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def replace_quotes(line):\r\n",
+					"    return line.replace('\"', '')\r\n",
+					"   \r\n",
+					"    \r\n",
+					"\r\n",
+					"# Apply function using map()\r\n",
+					"replaced_rdd = rdd.map(replace_quotes)\r\n",
+					"\r\n",
+					"\r\n",
+					"# Show transformed RDD elements\r\n",
+					"#data_rdd = replaced_rdd.collect()\r\n",
+					"replaced_rdd.take(5)\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 54
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"replaced_rdd.take(5)"
+				],
+				"execution_count": 39
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.types import *\r\n",
+					"schema = StructType([\r\n",
+					"    StructField('name', StringType(), True),\r\n",
+					"    StructField('school', StringType(), True),\r\n",
+					"    StructField('fees', IntegerType(), True),\r\n",
+					"    StructField('age', IntegerType(), True),\r\n",
+					"    StructField('place', StringType(), True)\r\n",
+					"])"
+				],
+				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"header = replaced_rdd.first()\r\n",
+					"\r\n",
+					"# Filter out the header from the data\r\n",
+					"data_rdd = rdd.filter(lambda line: line != header)\r\n",
+					"\r\n",
+					"# Create DataFrame using withColumnRenamed to set header\r\n",
+					"df = data_rdd.toDF(header)\r\n",
+					"\r\n",
+					"# Show DataFrame\r\n",
+					"df.show()"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#from pyspark.sql import SparkSession, Row\r\n",
+					"#row_rdd = replaced_rdd.map(lambda x: Row(first_name=x[0], last_name=x[1]))"
+				],
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = spark.createDataFrame(replaced_rdd,schema)"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.show()"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"replaced_rdd.first()"
+				],
+				"execution_count": 27
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"# Create SparkSession\r\n",
+					"spark = SparkSession.builder.appName(\"RDD to DataFrame with Header\").getOrCreate()\r\n",
+					"\r\n",
+					"# Example RDD with header and data\r\n",
+					"rdd = spark.sparkContext.parallelize([\r\n",
+					"    ('1', 'Alice', 25),\r\n",
+					"    ('2', 'Bob', 30),\r\n",
+					"    ('3', 'Charlie', 35)\r\n",
+					"])\r\n",
+					"\r\n",
+					"rdd.take(5)\r\n",
+					""
+				],
+				"execution_count": 30
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"rdd.first()"
+				],
+				"execution_count": 31
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"data_rdd = replaced_rdd.collect()\r\n",
+					"print(data_rdd)"
+				],
+				"execution_count": 43
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"\r\n",
+					"# Your list of strings\r\n",
+					"\r\n",
+					"\r\n",
+					"# Splitting the header and data\r\n",
+					"header = data_rdd[0]\r\n",
+					"data = data_rdd[1:]\r\n",
+					"\r\n",
+					"# Split each line by comma and create Row objects\r\n",
+					"split_data = [line.split(',') for line in data]\r\n",
+					"rows = [Row(*line) for line in split_data]\r\n",
+					"\r\n",
+					"# Create DataFrame with inferred schema\r\n",
+					"df = spark.createDataFrame(rows, header.split(','))\r\n",
+					"\r\n",
+					"# Show DataFrame\r\n",
+					"df.show()\r\n",
+					"df.printSchema()\r\n",
+					""
+				],
+				"execution_count": 45
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = df.withColumn('fees',df.fees.cast('int')).withColumn('age',df.age.cast('int')).printSchema()"
+				],
+				"execution_count": 49
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"\r\n",
+					"    \r\n",
+					"    from pyspark import SparkContext\r\n",
+					"    # Create SparkContext\r\n",
+					"    #sc = SparkContext(\"local\", \"CSV to RDD\")\r\n",
+					"\r\n",
+					"    # Read CSV file into RDD\r\n",
+					"    rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"    def rdd_to_df(rdd):\r\n",
+					"        def replace_quotes(line):\r\n",
+					"            return line.replace('\"', '')\r\n",
+					"   \r\n",
+					"    \r\n",
+					"        # Apply function using map()\r\n",
+					"        replaced_rdd = rdd.map(replace_quotes)\r\n",
+					"\r\n",
+					"\r\n",
+					"        # Show transformed RDD elements\r\n",
+					"        data_rdd = replaced_rdd.collect()\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"        # Splitting the header and data\r\n",
+					"        header = data_rdd[0]\r\n",
+					"        data = data_rdd[1:]\r\n",
+					"\r\n",
+					"        # Split each line by comma and create Row objects\r\n",
+					"        split_data = [line.split(',') for line in data]\r\n",
+					"        rows = [Row(*line) for line in split_data]\r\n",
+					"\r\n",
+					"        # Create DataFrame with inferred schema\r\n",
+					"        df = spark.createDataFrame(rows, header.split(','))\r\n",
+					"        df = df.withColumn('fees',df.fees.cast('int')).withColumn('age',df.age.cast('int'))\r\n",
+					"        df.printSchema()\r\n",
+					"        df.show()\r\n",
+					"\r\n",
+					"end_time = time.time()\r\n",
+					"\r\n",
+					"# Calculate time taken\r\n",
+					"elapsed_time = end_time - start_time\r\n",
+					"print(f\"Time taken: {elapsed_time} seconds\")\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 50
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark import SparkContext\r\n",
+					"# Create SparkContext\r\n",
+					"#sc = SparkContext(\"local\", \"CSV to RDD\") vefv\r\n",
+					"\r\n",
+					"# Read CSV file into RDD\r\n",
+					"rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"def rdd_to_df(rdd):\r\n",
+					"    def replace_quotes(line):\r\n",
+					"        return line.replace('\"', '')\r\n",
+					"   \r\n",
+					"    \r\n",
+					"        # Apply function using map()\r\n",
+					"    replaced_rdd = rdd.map(replace_quotes)\r\n",
+					"\r\n",
+					"\r\n",
+					"    # Show transformed RDD elements\r\n",
+					"    data_rdd = replaced_rdd.collect()\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"    # Splitting the header and data\r\n",
+					"    header = data_rdd[0]\r\n",
+					"    data = data_rdd[1:]\r\n",
+					"\r\n",
+					"    # Split each line by comma and create Row objects\r\n",
+					"    split_data = [line.split(',') for line in data]\r\n",
+					"    rows = [Row(*line) for line in split_data]\r\n",
+					"\r\n",
+					"    # Create DataFrame with inferred schema\r\n",
+					"    df = spark.createDataFrame(rows, header.split(','))\r\n",
+					"    df = df.withColumn('fees',df.fees.cast('int')).withColumn('age',df.age.cast('int'))\r\n",
+					"    df.printSchema()\r\n",
+					"    df.show()\r\n",
+					"\r\n",
+					"rdd_to_df(rdd)"
+				],
+				"execution_count": 51
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(type(replaced_rdd))\r\n",
+					"print(type(data_rdd))\r\n",
+					"print(rows)"
+				],
+				"execution_count": 56
+			}
+		]
+	}
+}

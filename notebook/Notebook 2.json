@@ -1,0 +1,110 @@
+{
+	"name": "Notebook 2",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "newpool5434",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "01b2401e-00fd-4d3d-8b90-9f694682b494"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/newpool5434",
+				"name": "newpool5434",
+				"type": "Spark",
+				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/newpool5434",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"\r\n",
+					"import time\r\n",
+					"\r\n",
+					"# Record start time\r\n",
+					"start_time = time.time()\r\n",
+					"for _ in range(1000000):\r\n",
+					"    \r\n",
+					"    from pyspark import SparkContext\r\n",
+					"    # Create SparkContext\r\n",
+					"    #sc = SparkContext(\"local\", \"CSV to RDD\")\r\n",
+					"\r\n",
+					"    # Read CSV file into RDD\r\n",
+					"    rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"    def rdd_to_df(rdd):\r\n",
+					"        def replace_quotes(line):\r\n",
+					"            return line.replace('\"', '')\r\n",
+					"   \r\n",
+					"    \r\n",
+					"        # Apply function using map()\r\n",
+					"        replaced_rdd = rdd.map(replace_quotes)\r\n",
+					"\r\n",
+					"\r\n",
+					"        # Show transformed RDD elements\r\n",
+					"        data_rdd = replaced_rdd.collect()\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"        # Splitting the header and data\r\n",
+					"        header = data_rdd[0]\r\n",
+					"        data = data_rdd[1:]\r\n",
+					"\r\n",
+					"        # Split each line by comma and create Row objects\r\n",
+					"        split_data = [line.split(',') for line in data]\r\n",
+					"        rows = [Row(*line) for line in split_data]\r\n",
+					"\r\n",
+					"        # Create DataFrame with inferred schema\r\n",
+					"        df = spark.createDataFrame(rows, header.split(','))\r\n",
+					"        df = df.withColumn('fees',df.fees.cast('int')).withColumn('age',df.age.cast('int'))\r\n",
+					"        df.printSchema()\r\n",
+					"        df.show()\r\n",
+					"\r\n",
+					"end_time = time.time()\r\n",
+					"\r\n",
+					"# Calculate time taken\r\n",
+					"elapsed_time = end_time - start_time\r\n",
+					"print(f\"Time taken: {elapsed_time} seconds\")\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
