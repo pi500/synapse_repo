@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "270ae082-a4ad-4909-b283-525dd375e075"
+				"spark.autotune.trackingId": "5b35ef73-84bc-40a0-83d7-0ba2921debf8"
 			}
 		},
 		"metadata": {
@@ -33,21 +33,32 @@
 			"a365ComputeOptions": {
 				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/newpool",
 				"name": "newpool",
-				"type": "Spark",
-				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/newpool",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net"
-				},
-				"sparkVersion": "3.3",
-				"nodeCount": 3,
-				"cores": 4,
-				"memory": 28,
-				"automaticScaleJobs": false
+				}
 			},
 			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print('hello')"
+				],
+				"execution_count": 3
+			},
 			{
 				"cell_type": "code",
 				"metadata": {
@@ -116,12 +127,12 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 10
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"\r\n",
+					"'''\r\n",
 					"import time\r\n",
 					"\r\n",
 					"# Record start time\r\n",
@@ -169,11 +180,12 @@
 					"# Calculate time taken\r\n",
 					"elapsed_time = end_time - start_time\r\n",
 					"print(f\"Time taken: {elapsed_time} seconds\")\r\n",
+					"'''\r\n",
 					"\r\n",
 					"\r\n",
 					""
 				],
-				"execution_count": 4
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
