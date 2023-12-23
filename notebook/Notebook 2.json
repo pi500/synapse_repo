@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "53898268-8b57-4703-8b34-61ff963e3e56"
+				"spark.autotune.trackingId": "270ae082-a4ad-4909-b283-525dd375e075"
 			}
 		},
 		"metadata": {
@@ -74,6 +74,7 @@
 					"#rdd.take(5)\r\n",
 					"\r\n",
 					"lisn = rdd.collect()\r\n",
+					"print(lisn)\r\n",
 					"data_rdd = []\r\n",
 					"def remove_quote_new(input_string):\r\n",
 					"    modified_string = input_string[:1] + input_string[1:-1].replace('\"', '') + input_string[-1]\r\n",
@@ -96,7 +97,7 @@
 					"        data_rdd.append(n_str)\r\n",
 					"        \r\n",
 					"\r\n",
-					"print(data_rdd)\r\n",
+					"#print(data_rdd)\r\n",
 					"\r\n",
 					"\r\n",
 					"header = data_rdd[0]\r\n",
@@ -110,13 +111,12 @@
 					"df = spark.createDataFrame(rows, header.split(','))\r\n",
 					"df = df.withColumn('fees',df.fees.cast('int')).withColumn('age',df.age.cast('int'))\r\n",
 					"df.printSchema()\r\n",
-					"rdd.take(5)\r\n",
 					"df.show()\r\n",
 					"\r\n",
 					"\r\n",
 					""
 				],
-				"execution_count": 1
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -173,7 +173,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
