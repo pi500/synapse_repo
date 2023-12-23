@@ -4,7 +4,7 @@
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "mypool89",
+			"referenceName": "newpool",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "235d8fe6-89f2-4565-9607-9e4f30feb056"
+				"spark.autotune.trackingId": "94876b34-8bdc-4e91-9efe-4a6bb8d64642"
 			}
 		},
 		"metadata": {
@@ -31,16 +31,16 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/mypool89",
-				"name": "mypool89",
+				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/newpool",
+				"name": "newpool",
 				"type": "Spark",
-				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/mypool89",
+				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/newpool",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.3",
-				"nodeCount": 10,
+				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
 				"automaticScaleJobs": false
@@ -73,7 +73,7 @@
 					"# Show RDD elements\r\n",
 					"rdd.take(5) "
 				],
-				"execution_count": 5
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -90,22 +90,61 @@
 				},
 				"source": [
 					"lisn = rdd.collect()\r\n",
+					"too = []\r\n",
 					"def remove_quote_new(input_string):\r\n",
-					"    modified_string = input_string[:2] + input_string[2:-1].replace('#', '') + input_string[-1]\r\n",
+					"    modified_string = input_string[:1] + input_string[1:-1].replace('\"', '') + input_string[-1]\r\n",
 					"    return modified_string\r\n",
 					"#print(lisn)\r\n",
 					"for i in lisn:\r\n",
 					"    no = i.split(',')\r\n",
+					"    #print(no)\r\n",
 					"    #if re.match(r'^\".*\"$', no[0]) is not None:\r\n",
 					"    if no[0].startswith('\"') and no[0].endswith('\"'):\r\n",
 					"        result = remove_quote_new(no[0])\r\n",
-					"        print(result)\r\n",
-					"    no[0] = result\r\n",
+					"    \r\n",
+					"        no[0] = result\r\n",
+					"        n_str = ','.join(no)\r\n",
+					"        too.append(n_str)\r\n",
+					"        \r\n",
+					"        \r\n",
+					"    else:\r\n",
+					"        n_str = ','.join(no)\r\n",
+					"        too.append(n_str)\r\n",
 					"        \r\n",
 					"\r\n",
-					"print(no)"
+					"print(too)"
 				],
-				"execution_count": 43
+				"execution_count": 31
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql import SparkSession, Row\r\n",
+					"header = too[0]\r\n",
+					"data = too[1:]\r\n",
+					"\r\n",
+					"# Split each line by comma and create Row objects\r\n",
+					"split_data = [line.split(',') for line in data]\r\n",
+					"rows = [Row(*line) for line in split_data]\r\n",
+					"\r\n",
+					"# Create DataFrame with inferred schema\r\n",
+					"df = spark.createDataFrame(rows, header.split(','))\r\n",
+					"df = df.withColumn('fees',df.fees.cast('int')).withColumn('age',df.age.cast('int'))\r\n",
+					"df.printSchema()\r\n",
+					"df.show()"
+				],
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -157,7 +196,7 @@
 					"#print(my_list)\r\n",
 					"print(boo)"
 				],
-				"execution_count": 37
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -187,7 +226,7 @@
 					"print(result_string)\r\n",
 					""
 				],
-				"execution_count": 31
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -220,7 +259,7 @@
 					"print(result_string)\r\n",
 					""
 				],
-				"execution_count": 26
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -252,7 +291,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 8
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -338,7 +377,7 @@
 					}
 				},
 				"source": [
-					"#from pyspark.sql import SparkSession, Row\r\n",
+					"from pyspark.sql import SparkSession, Row\r\n",
 					"#row_rdd = replaced_rdd.map(lambda x: Row(first_name=x[0], last_name=x[1]))"
 				],
 				"execution_count": null
@@ -636,7 +675,7 @@
 					"\r\n",
 					"rdd_to_df(rdd)"
 				],
-				"execution_count": 2
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -657,6 +696,76 @@
 					"print(rows)"
 				],
 				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark import SparkContext\r\n",
+					"from pyspark.sql import SparkSession, Row\r\n",
+					"# Create SparkContext\r\n",
+					"#sc = SparkContext(\"local\", \"CSV to RDD\")\r\n",
+					"\r\n",
+					"# Read CSV file into RDD\r\n",
+					"rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"# Show RDD elements\r\n",
+					"rdd.take(5)\r\n",
+					"\r\n",
+					"lisn = rdd.collect()\r\n",
+					"data_rdd = []\r\n",
+					"def remove_quote_new(input_string):\r\n",
+					"    modified_string = input_string[:1] + input_string[1:-1].replace('\"', '') + input_string[-1]\r\n",
+					"    return modified_string\r\n",
+					"#print(lisn)\r\n",
+					"for i in lisn:\r\n",
+					"    new_list = i.split(',')\r\n",
+					"    #print(no)\r\n",
+					"    #if re.match(r'^\".*\"$', no[0]) is not None:\r\n",
+					"    if new_list[0].startswith('\"') and new_list[0].endswith('\"'):\r\n",
+					"        result = remove_quote_new(new_list[0])\r\n",
+					"    \r\n",
+					"        new_list[0] = result\r\n",
+					"        n_str = ','.join(new_list)\r\n",
+					"        data_rdd.append(n_str)\r\n",
+					"        \r\n",
+					"        \r\n",
+					"    else:\r\n",
+					"        n_str = ','.join(new_list)\r\n",
+					"        data_rdd.append(n_str)\r\n",
+					"        \r\n",
+					"\r\n",
+					"#print(data_rdd)\r\n",
+					"\r\n",
+					"\r\n",
+					"header = data_rdd[0]\r\n",
+					"data = data_rdd[1:]\r\n",
+					"\r\n",
+					"# Split each line by comma and create Row objects\r\n",
+					"split_data = [line.split(',') for line in data]\r\n",
+					"rows = [Row(*line) for line in split_data]\r\n",
+					"\r\n",
+					"# Create DataFrame with inferred schema\r\n",
+					"df = spark.createDataFrame(rows, header.split(','))\r\n",
+					"df = df.withColumn('fees',df.fees.cast('int')).withColumn('age',df.age.cast('int'))\r\n",
+					"df.printSchema()\r\n",
+					"rdd.take(5)\r\n",
+					"df.show()\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 34
 			}
 		]
 	}
