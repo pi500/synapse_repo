@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "628fe957-885a-4b6a-84fa-cd38d90823a0"
+				"spark.autotune.trackingId": "235d8fe6-89f2-4565-9607-9e4f30feb056"
 			}
 		},
 		"metadata": {
@@ -74,6 +74,38 @@
 					"rdd.take(5) "
 				],
 				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"lisn = rdd.collect()\r\n",
+					"def remove_quote_new(input_string):\r\n",
+					"    modified_string = input_string[:2] + input_string[2:-1].replace('#', '') + input_string[-1]\r\n",
+					"    return modified_string\r\n",
+					"#print(lisn)\r\n",
+					"for i in lisn:\r\n",
+					"    no = i.split(',')\r\n",
+					"    #if re.match(r'^\".*\"$', no[0]) is not None:\r\n",
+					"    if no[0].startswith('\"') and no[0].endswith('\"'):\r\n",
+					"        result = remove_quote_new(no[0])\r\n",
+					"        print(result)\r\n",
+					"    no[0] = result\r\n",
+					"        \r\n",
+					"\r\n",
+					"print(no)"
+				],
+				"execution_count": 43
 			},
 			{
 				"cell_type": "code",
