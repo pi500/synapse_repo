@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "05c3d225-1690-497e-ab1d-15015dff515b"
+				"spark.autotune.trackingId": "6d8ae719-f4a3-43ac-9f9d-a53e773aafe3"
 			}
 		},
 		"metadata": {
@@ -40,7 +40,7 @@
 					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.3",
-				"nodeCount": 10,
+				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
 				"automaticScaleJobs": false
@@ -134,7 +134,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -192,7 +192,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -235,7 +235,7 @@
 					"data_rdd = rdd.collect()\r\n",
 					"print(data_rdd)"
 				],
-				"execution_count": 6
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -272,7 +272,7 @@
 					"char = '\"'\r\n",
 					"index = 0"
 				],
-				"execution_count": 17
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -307,7 +307,7 @@
 					"    \r\n",
 					""
 				],
-				"execution_count": 18
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -374,7 +374,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 26
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -392,7 +392,7 @@
 				"source": [
 					""
 				],
-				"execution_count": 27
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -416,6 +416,287 @@
 					"    col(\"Name\"),\r\n",
 					"    when(col(\"Age\").rlike(\"^[0-9]+$\"), col(\"Age\").cast(IntegerType())).otherwise(col(\"Age\")).alias(\"Age\")\r\n",
 					")"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark import SparkContext\r\n",
+					"\r\n",
+					"# Initialize SparkContext\r\n",
+					"#sc = SparkContext(\"local\", \"SplitRecordsExample\")\r\n",
+					"\r\n",
+					"# Example RDD with comma-separated records\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"# Function to split each record by comma\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"\r\n",
+					"# Collect and print the transformed RDD\r\n",
+					"collected_data = split_rdd.collect()\r\n",
+					"for record in collected_data:\r\n",
+					"    print(record)\r\n",
+					""
+				],
+				"execution_count": 40
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"split_rdd.collect()"
+				],
+				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#def replace_quotes_in_list(sublist):\r\n",
+					"    #return [string.replace('\"', '') for string in sublist]\r\n",
+					"\r\n",
+					"char = '\"'\r\n",
+					"\r\n",
+					"def replace_quotes_in_list(strings_list):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        if len(string) > 2:  # Ensure the string has more than 2 characters\r\n",
+					"            modified_string = (\r\n",
+					"                string[:1] +\r\n",
+					"                string[1:-1].replace('\"', '') +  # Replace quotes between indices 1 and second-to-last\r\n",
+					"                string[-1:]\r\n",
+					"            )\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"        else:\r\n",
+					"            modified_list.append(string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"# Apply the function using map() to replace quotes in each string in the list\r\n",
+					"modified_rdd = split_rdd.map(replace_quotes_in_list)\r\n",
+					"modified_rdd.collect()"
+				],
+				"execution_count": 45
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"header = modified_rdd.first()\r\n",
+					"\r\n",
+					"# Filter out the header row from the RDD\r\n",
+					"data_without_header = modified_rdd.filter(lambda row: row != header)\r\n",
+					"data_without_header.collect()\r\n",
+					"\r\n",
+					"# Convert RDD to DataFrame with headers\r\n",
+					"df = spark.createDataFrame(data_without_header,header)\r\n",
+					"df.show()"
+				],
+				"execution_count": 43
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.show()"
+				],
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.printSchema()"
+				],
+				"execution_count": 29
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def csvtodf(char):\r\n",
+					"    from pyspark import SparkContext\r\n",
+					"\r\n",
+					"\r\n",
+					"    # Initialize SparkContext\r\n",
+					"    #sc = SparkContext(\"local\", \"SplitRecordsExample\")\r\n",
+					"\r\n",
+					"    # Example RDD with comma-separated records\r\n",
+					"    original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"    # Function to split each record by comma\r\n",
+					"    def split_record(record):\r\n",
+					"        return record.split(',')\r\n",
+					"\r\n",
+					"    # Apply the split_record function to each record using map()\r\n",
+					"    split_rdd = original_rdd.map(split_record)\r\n",
+					"\r\n",
+					"    # Collect and print the transformed RDD\r\n",
+					"    #collected_data = split_rdd.collect()\r\n",
+					"    #for record in collected_data:\r\n",
+					"        #print(record)\r\n",
+					"\r\n",
+					"    if char == '\"':\r\n",
+					"            def replace_quotes_in_list(strings_list):\r\n",
+					"                modified_list = []\r\n",
+					"                for string in strings_list:\r\n",
+					"                    if len(string) > 2:  # Ensure the string has more than 2 characters\r\n",
+					"                        modified_string = (\r\n",
+					"                            string[:1] +\r\n",
+					"                            string[1:-1].replace('\"', '') +  # Replace quotes between indices 1 and second-to-last\r\n",
+					"                            string[-1:]\r\n",
+					"                        )\r\n",
+					"                        modified_list.append(modified_string)\r\n",
+					"                    else:\r\n",
+					"                        modified_list.append(string)\r\n",
+					"                return modified_list\r\n",
+					"\r\n",
+					"            # Apply the function using map() to replace quotes in each string in the list\r\n",
+					"            modified_rdd = split_rdd.map(replace_quotes_in_list)\r\n",
+					"            #modified_rdd.collect()\r\n",
+					"\r\n",
+					"    elif char == '/':\r\n",
+					"            def replace_quotes_in_list(strings_list):\r\n",
+					"                modified_list = []\r\n",
+					"                for string in strings_list:\r\n",
+					"                    if len(string) > 2:  # Ensure the string has more than 2 characters\r\n",
+					"                        modified_string = (\r\n",
+					"                            string[:1] +\r\n",
+					"                            string[1:-1].replace('/', '') +  # Replace quotes between indices 1 and second-to-last\r\n",
+					"                            string[-1:]\r\n",
+					"                        )\r\n",
+					"                        modified_list.append(modified_string)\r\n",
+					"                    else:\r\n",
+					"                        modified_list.append(string)\r\n",
+					"                return modified_list\r\n",
+					"\r\n",
+					"            # Apply the function using map() to replace quotes in each string in the list\r\n",
+					"            modified_rdd = split_rdd.map(replace_quotes_in_list)\r\n",
+					"            #modified_rdd.collect()\r\n",
+					"\r\n",
+					"    header = modified_rdd.first()\r\n",
+					"\r\n",
+					"    # Filter out the header row from the RDD\r\n",
+					"    data_without_header = modified_rdd.filter(lambda row: row != header)\r\n",
+					"    data_without_header.collect()\r\n",
+					"\r\n",
+					"    # Convert RDD to DataFrame with headers\r\n",
+					"    df = spark.createDataFrame(data_without_header,header)\r\n",
+					"    df.show()\r\n",
+					"\r\n",
+					"csvtodf('/')\r\n",
+					""
+				],
+				"execution_count": 56
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.show()"
+				],
+				"execution_count": 57
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
 				],
 				"execution_count": null
 			}
