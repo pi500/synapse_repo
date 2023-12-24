@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6d8ae719-f4a3-43ac-9f9d-a53e773aafe3"
+				"spark.autotune.trackingId": "7cb301f6-4d7f-4ec0-9e46-b626165883d0"
 			}
 		},
 		"metadata": {
@@ -33,17 +33,10 @@
 			"a365ComputeOptions": {
 				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/mypool",
 				"name": "mypool",
-				"type": "Spark",
-				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/mypool",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net"
-				},
-				"sparkVersion": "3.3",
-				"nodeCount": 3,
-				"cores": 4,
-				"memory": 28,
-				"automaticScaleJobs": false
+				}
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -648,7 +641,24 @@
 					"            # Apply the function using map() to replace quotes in each string in the list\r\n",
 					"            modified_rdd = split_rdd.map(replace_quotes_in_list)\r\n",
 					"            #modified_rdd.collect()\r\n",
+					"    elif char == '/\"':\r\n",
+					"            def replace_quotes_in_list(strings_list):\r\n",
+					"                modified_list = []\r\n",
+					"                for string in strings_list:\r\n",
+					"                    if len(string) > 2:  # Ensure the string has more than 2 characters\r\n",
+					"                        modified_string = (\r\n",
+					"                            string[:1] +\r\n",
+					"                            string[1:-1].replace('/\"', '') +  # Replace quotes between indices 1 and second-to-last\r\n",
+					"                            string[-1:]\r\n",
+					"                        )\r\n",
+					"                        modified_list.append(modified_string)\r\n",
+					"                    else:\r\n",
+					"                        modified_list.append(string)\r\n",
+					"                return modified_list\r\n",
 					"\r\n",
+					"            # Apply the function using map() to replace quotes in each string in the list\r\n",
+					"            modified_rdd = split_rdd.map(replace_quotes_in_list)\r\n",
+					"            #modified_rdd.collect()\r\n",
 					"    header = modified_rdd.first()\r\n",
 					"\r\n",
 					"    # Filter out the header row from the RDD\r\n",
@@ -659,10 +669,10 @@
 					"    df = spark.createDataFrame(data_without_header,header)\r\n",
 					"    df.show()\r\n",
 					"\r\n",
-					"csvtodf('/')\r\n",
+					"csvtodf('/\"')\r\n",
 					""
 				],
-				"execution_count": 56
+				"execution_count": 59
 			},
 			{
 				"cell_type": "code",
@@ -680,7 +690,7 @@
 				"source": [
 					"df.show()"
 				],
-				"execution_count": 57
+				"execution_count": 60
 			},
 			{
 				"cell_type": "code",
