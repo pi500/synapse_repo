@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e72d0aab-0794-40c3-9424-1f48a5e074b4"
+				"spark.autotune.trackingId": "a9341f1e-932a-4b64-91a7-7647aeed9d54"
 			}
 		},
 		"metadata": {
@@ -33,17 +33,10 @@
 			"a365ComputeOptions": {
 				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/mypool",
 				"name": "mypool",
-				"type": "Spark",
-				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/mypool",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net"
-				},
-				"sparkVersion": "3.3",
-				"nodeCount": 3,
-				"cores": 4,
-				"memory": 28,
-				"automaticScaleJobs": false
+				}
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -1021,9 +1014,101 @@
 					}
 				},
 				"source": [
+					"df.show(10)"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"sample_count = df.sample(False, 0.1).count()  # Adjust the fraction as needed\r\n",
+					"print(\"Estimated count:\", sample_count)\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.printSchema()"
+				],
+				"execution_count": 29
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"\r\n",
+					"def cast_columns_by_content(df):\r\n",
+					"    for col_name in df.columns:\r\n",
+					"        sample_data = df.select(col(col_name)).limit(100)  # Take a sample of data from each column\r\n",
+					"\r\n",
+					"        # Check if the column can be cast to integer\r\n",
+					"        if sample_data.filter(col(col_name).cast(\"int\").isNotNull()).count() == sample_data.count():\r\n",
+					"            df = df.withColumn(col_name, col(col_name).cast(\"int\"))\r\n",
+					"        # Check if the column can be cast to float\r\n",
+					"        elif sample_data.filter(col(col_name).cast(\"float\").isNotNull()).count() == sample_data.count():\r\n",
+					"            df = df.withColumn(col_name, col(col_name).cast(\"float\"))\r\n",
+					"        # Add more elif conditions for other data types as needed\r\n",
+					"\r\n",
+					"    return df\r\n",
+					"\r\n",
+					"# Usage:\r\n",
+					"new_df = cast_columns_by_content(df)\r\n",
+					""
+				],
+				"execution_count": 30
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"new_df.printSchema()"
+				],
+				"execution_count": 31
 			}
 		]
 	}
