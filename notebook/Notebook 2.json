@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "a9341f1e-932a-4b64-91a7-7647aeed9d54"
+				"spark.autotune.trackingId": "e1bd4757-5911-41dd-b634-2b6a1e69a8fe"
 			}
 		},
 		"metadata": {
@@ -33,10 +33,17 @@
 			"a365ComputeOptions": {
 				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/mypool",
 				"name": "mypool",
+				"type": "Spark",
+				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/mypool",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net"
-				}
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -1106,9 +1113,614 @@
 					}
 				},
 				"source": [
-					"new_df.printSchema()"
+					"from pyspark import SparkContext\r\n",
+					"\r\n",
+					"my_dict = {name:['\"'],school:[\"//\"]}\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Example RDD with comma-separated records\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Function to split each record by comma\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"new_dict = {}\r\n",
+					"my_dict = {'name':'\"','school':\"//\"}\r\n",
+					"for i in ccc:\r\n",
+					"    if i in my_dict:\r\n",
+					"        \r\n",
+					"        new_dict[i] = ccc.index(i)\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"def replace_quotes_in_list(strings_list, char):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        if len(string) > 2:  \r\n",
+					"            modified_string = (\r\n",
+					"                string[:1] +\r\n",
+					"                string[1:-1].replace(char, '') +\r\n",
+					"                string[-1:]\r\n",
+					"            )\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"        else:\r\n",
+					"            modified_list.append(string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"# Assuming split_rdd is your RDD of strings\r\n",
+					"\r\n",
+					"char_to_match = '\"'  # or any other character you're matching\r\n",
+					"modified_rdd = None  # Initialize modified_rdd\r\n",
+					"\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    for element in value_list:\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: replace_quotes_in_list(x[new_dict['{key}']], value))\r\n",
+					"\r\n",
+					"\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: replace_quotes_in_list(x, '\"'))\r\n",
+					"    case \"'\":\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: replace_quotes_in_list(x, \"'\"))\r\n",
+					"    case \"#\" :\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: replace_quotes_in_list(x, '#'))\r\n",
+					"\r\n",
+					"header = modified_rdd.first()\r\n",
+					"data_without_header = modified_rdd.filter(lambda row: row != header)\r\n",
+					"data_without_header.collect()\r\n",
+					"\r\n",
+					"# Convert RDD to DataFrame with headers\r\n",
+					"df = spark.createDataFrame(data_without_header,header)\r\n",
+					"df.show(1000)\r\n",
+					""
 				],
-				"execution_count": 31
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Function to split each record by comma\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"\r\n",
+					"ccc = split_rdd.first()\r\n",
+					"print(ccc)\r\n",
+					"\r\n",
+					"print(type(split_rdd))\r\n",
+					"split_rdd.foreach(lambda x: print(x[0]))\r\n",
+					""
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"new_dict = {}\r\n",
+					"my_dict = {'name':'\"','school':\"//\"}\r\n",
+					"for i in ccc:\r\n",
+					"    if i in my_dict:\r\n",
+					"        \r\n",
+					"        new_dict[i] = ccc.index(i)\r\n",
+					"\r\n",
+					"print(new_dict)\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"my_dict = {'name':['\"'],'school':[\"//\"]}\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Example RDD with comma-separated records\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Function to split each record by comma\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"new_dict = {}\r\n",
+					"my_dict = {'name':['\"'],'school':[\"//\"]}\r\n",
+					"#for i in ccc:\r\n",
+					"    #if i in my_dict:\r\n",
+					"        \r\n",
+					"        #new_dict[i] = ccc.index(i)\r\n",
+					"\r\n",
+					"lisn = split_rdd.first()\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"def replace_quotes_in_list(strings_list, char):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        if len(string) > 2:  \r\n",
+					"            modified_string = (\r\n",
+					"                string[:1] +\r\n",
+					"                string[1:-1].replace(char, '') +\r\n",
+					"                string[-1:]\r\n",
+					"            )\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"        else:\r\n",
+					"            modified_list.append(string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"# Assuming split_rdd is your RDD of strings\r\n",
+					"\r\n",
+					"char_to_match = '\"'  # or any other character you're matching\r\n",
+					"modified_rdd = None  # Initialize modified_rdd\r\n",
+					"\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    for element in value_list:\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: replace_quotes_in_list(x[lisn[key]]), value)\r\n",
+					"\r\n",
+					"modified_rdd.take(2)"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"my_dict = {'name':'\"','school':\"//\"}\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Example RDD with comma-separated records\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Function to split each record by comma\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"\r\n",
+					"lisn = split_rdd.first()\r\n",
+					"\r\n",
+					"def replace_quotes_in_list(strings_list, char):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        if len(string) > 2:  \r\n",
+					"            modified_string = (\r\n",
+					"                string[:1] +\r\n",
+					"                string[1:-1].replace(char, '') +\r\n",
+					"                string[-1:]\r\n",
+					"            )\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"        else:\r\n",
+					"            modified_list.append(string)\r\n",
+					"    return modified_list\r\n",
+					"modified_rdd = split_rdd\r\n",
+					"for key,value in my_dict.items():\r\n",
+					"    modified_rdd = modified_rdd.map(lambda x: replace_quotes_in_list(x[lisn.index(key)], value))\r\n",
+					"\r\n",
+					"modified_rdd.collect()\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 61
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark import SparkContext\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Example RDD with comma-separated records\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Function to split each record by comma\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"\r\n",
+					"# Function to replace characters in a list of strings\r\n",
+					"def replace_characters_in_list(strings_list, char_to_replace, replacement_char):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        modified_string = string.replace(char_to_replace, replacement_char)\r\n",
+					"        modified_list.append(modified_string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"# Dictionary defining characters to replace for each key\r\n",
+					"my_dict = {'name': '\"', 'school': '//'}\r\n",
+					"\r\n",
+					"new_dict = {}\r\n",
+					"for i, key in enumerate(split_rdd.first()):\r\n",
+					"    if key in my_dict:\r\n",
+					"        new_dict[key] = i\r\n",
+					"\r\n",
+					"# Assuming split_rdd is your RDD of strings\r\n",
+					"\r\n",
+					"modified_rdd = split_rdd.map(lambda x: [\r\n",
+					"    replace_characters_in_list(\r\n",
+					"        x[i], my_dict[key], '') if key in my_dict else x[i]\r\n",
+					"    for i, key in enumerate(new_dict)\r\n",
+					"])\r\n",
+					"\r\n",
+					"# Show the modified RDD\r\n",
+					"modified_rdd.take(5)\r\n",
+					""
+				],
+				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Function to split each record by comma\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"def replace_quotes_in_list(strings_list, char):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        if len(string) > 2:  \r\n",
+					"            modified_string = (\r\n",
+					"                string[:1] +\r\n",
+					"                string[1:-1].replace(char, '') +\r\n",
+					"                string[-1:]\r\n",
+					"            )\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"        else:\r\n",
+					"            modified_list.append(string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"my_dict = {'name': ['\"'], 'school': ['//']}\r\n",
+					"list_names = split_rdd.first()  # Assuming this retrieves the list of names\r\n",
+					"\r\n",
+					"modified_rdd = split_rdd.map(lambda x: [\r\n",
+					"    replace_quotes_in_list(\r\n",
+					"        x[list_names.index(key)], value[0]\r\n",
+					"    ) if key in my_dict else x[list_names.index(key)]\r\n",
+					"    for key, value in my_dict.items()\r\n",
+					"])\r\n",
+					"\r\n",
+					"modified_rdd.take(2)  # Show the modified RDD elements for the first 2 rows\r\n",
+					""
+				],
+				"execution_count": 36
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"my_dict = {'name': '\"', 'school': '//'}\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"# Assuming you have an RDD split_rdd with records split by comma\r\n",
+					"\r\n",
+					"def replace_chars_in_list(strings_list, char_to_replace):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        modified_string = string.replace(char_to_replace, '')\r\n",
+					"        modified_list.append(modified_string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"modified_rdd = split_rdd.map(lambda x: [\r\n",
+					"    replace_chars_in_list(x[lisn.index(key)], value) if key in my_dict else x[lisn.index(key)]\r\n",
+					"    for key, value in my_dict.items()\r\n",
+					"])\r\n",
+					"\r\n",
+					"modified_rdd.take(5)  # Show the modified RDD for the first 5 rows\r\n",
+					""
+				],
+				"execution_count": 40
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"split_rdd.collect()"
+				],
+				"execution_count": 50
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"my_dict = {'name':'\"', 'school':\"/\"}\r\n",
+					"lisn = split_rdd.first()\r\n",
+					"\r\n",
+					"def replace_chars_in_list(strings_list, char_to_replace):\r\n",
+					"    modified_list = []\r\n",
+					"    for string in strings_list:\r\n",
+					"        modified_string = string.replace(char_to_replace, '')\r\n",
+					"        modified_list.append(modified_string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"modified_rdd = split_rdd\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():  # Added .items() to iterate through key-value pairs\r\n",
+					"    if key in lisn:  # Checking if the key exists in the list of column names\r\n",
+					"        index = lisn.index(key)  # Get the index of the key in the list\r\n",
+					"        print(index)\r\n",
+					"        modified_rdd = modified_rdd.map(lambda x: x[:index] + [replace_chars_in_list([x[index]], value)[0]] + x[index + 1:])\r\n",
+					"            \r\n",
+					"modified_rdd.take(8)"
+				],
+				"execution_count": 66
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"my_dict = {'name':'\"', 'school':\"/\"}\r\n",
+					"lisn = split_rdd.first()\r\n",
+					"\r\n",
+					"def replace_chars_in_list(string, char_to_replace):\r\n",
+					"    return string.replace(char_to_replace, '')\r\n",
+					"\r\n",
+					"modified_rdd = None\r\n",
+					"boo = 0\r\n",
+					"\r\n",
+					"while boo <= len(my_dict):\r\n",
+					"    no = 1\r\n",
+					"    for key, value in my_dict.items():\r\n",
+					"        modified_rdd_{no} = split_rdd\r\n",
+					"        index = lisn.index(key)\r\n",
+					"        modified_rdd = modified_rdd.map(lambda x: x[:index] + [replace_chars_in_list(x[index], value)] + x[index + 1:])\r\n",
+					"            \r\n",
+					"\r\n",
+					"modified_rdd.take(8)\r\n",
+					""
+				],
+				"execution_count": 84
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"my_dict = {'name':'\"', 'school': '/'}\r\n",
+					"lisn = split_rdd.first()\r\n",
+					"\r\n",
+					"def replace_chars_in_list(string, char_to_replace):\r\n",
+					"    return string.replace(char_to_replace, '')\r\n",
+					"\r\n",
+					"# Create an initial RDD to store modifications\r\n",
+					"modified_column_rdd = split_rdd\r\n",
+					"\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    boo = 1\r\n",
+					"    modified_column_rdd = f\"modified_column_rdd{boo}\"\r\n",
+					"\r\n",
+					"    if key in lisn:\r\n",
+					"        index = lisn.index(key)\r\n",
+					"        # Create a new RDD with the modified column\r\n",
+					"        modified_column_rdd{boo} = modified_column_rdd.map(lambda x: x[:index] + [replace_chars_in_list(x[index], value)] + x[index + 1:])\r\n",
+					"        # Merge the modified column RDD with the existing modified_rdd\r\n",
+					"        modified_column_rdd = \r\n",
+					"\r\n",
+					"modified_rdd.take(5)  # Fetch first few rows to see the modifications\r\n",
+					""
+				],
+				"execution_count": 82
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Initialize an empty dictionary\r\n",
+					"variable_dict = {}\r\n",
+					"\r\n",
+					"# Define the number of iterations\r\n",
+					"num_iterations = 5\r\n",
+					"\r\n",
+					"# Loop to create keys with appended integers and assign values\r\n",
+					"for i in range(num_iterations):\r\n",
+					"    # Create a key with an appended integer value\r\n",
+					"    key = f\"variable_{i}\"  # Using f-string for Python 3.6+\r\n",
+					"    \r\n",
+					"    # Assign a value to the dynamically created key\r\n",
+					"    variable_dict[key] = i * 10  # Assigning a value (here, i * 10 for demonstration)\r\n",
+					"\r\n",
+					"# Display the dictionary with dynamically created keys\r\n",
+					"print(variable_dict)\r\n",
+					""
+				],
+				"execution_count": 85
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
 			}
 		]
 	}
