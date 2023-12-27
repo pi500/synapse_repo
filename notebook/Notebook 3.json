@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1ea38e0b-65d0-45d1-a745-bb3c9d741117"
+				"spark.autotune.trackingId": "1261e86c-e313-4c37-b428-62b5d0ce977e"
 			}
 		},
 		"metadata": {
@@ -429,6 +429,255 @@
 					""
 				],
 				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"variable_names = []  # Initialize an empty list to store variable names\r\n",
+					"\r\n",
+					"num_variables = 5\r\n",
+					"\r\n",
+					"for i in range(1, num_variables + 1):\r\n",
+					"    var_name = f\"var_{i}\"\r\n",
+					"    variable_names.append(var_name)  # Append the variable name to the list\r\n",
+					"    \r\n",
+					"    # Create variables using exec\r\n",
+					"    exec(f\"{var_name} = ''\")\r\n",
+					"\r\n",
+					"# Display the list containing variable names\r\n",
+					"print(variable_names)\r\n",
+					""
+				],
+				"execution_count": 80
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import monotonically_increasing_id, col\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
+					"\r\n",
+					"my_dict = {'name': '\"', 'school': '\\\\'}\r\n",
+					"my_lis = []\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"header = split_rdd.first()\r\n",
+					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
+					"df = spark.createDataFrame(data_without_header, header)\r\n",
+					"df = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"#df.show()\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    if key in header:\r\n",
+					"        index = header.index(key)\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: x[:index] + [x[index].replace(value, '')] + x[index + 1:] if len(x) > index else x)\r\n",
+					"        data_wo_header1 = modified_rdd.filter(lambda row: row != header)\r\n",
+					"        df_new = spark.createDataFrame(data_wo_header1, header)\r\n",
+					"        df_new = df_new.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"        df_new = df_new.select(col(key), col('pri_id'))\r\n",
+					"        df_new.printSchema()\r\n",
+					"        my_lis.append(df_new)\r\n",
+					"\r\n",
+					"columns_to_drop = list(my_dict.keys())\r\n",
+					"\r\n",
+					"for col_name in columns_to_drop:\r\n",
+					"    df = df.drop(col_name)\r\n",
+					"df.printSchema()\r\n",
+					"my_lis.insert(0, df)\r\n",
+					"#for i in my_lis:\r\n",
+					"    #i.show(5)\r\n",
+					"df_list = []\r\n",
+					"df_list.append(df)\r\n",
+					"result_df = None\r\n",
+					"boo = 0\r\n",
+					"for df in my_lis:\r\n",
+					"    \r\n",
+					"    final_df = df_list[-1].join(df, 'pri_id', 'right')\r\n",
+					"    df_list.append(final_df)\r\n",
+					"        \r\n",
+					"        #next_df.show()\r\n",
+					"\r\n",
+					"'''my_df = None\r\n",
+					"for j in df_list:\r\n",
+					"    if my_df is None:\r\n",
+					"        my_df = df\r\n",
+					"    else:\r\n",
+					"        my_df = my_df.unionByName(j,allowMissingColumns=True)'''\r\n",
+					"\r\n",
+					"    \r\n",
+					"\r\n",
+					"\r\n",
+					"neee_df = df_list[-1]\r\n",
+					"dis_list = []\r\n",
+					"exists_list =[]\r\n",
+					"for i in neee_df.columns:\r\n",
+					"    if i not in dis_list:\r\n",
+					"        dis_list.append(i)\r\n",
+					"\r\n",
+					"    else:\r\n",
+					"        exists_list.append(i)\r\n",
+					"\r\n",
+					"print(dis_list)\r\n",
+					"print(exists_list)\r\n",
+					"duplicate_cols = []\r\n",
+					"for i, col1 in enumerate(df.columns):\r\n",
+					"    for col2 in df.columns[i + 1:]:\r\n",
+					"        if col1 != col2 and df.select(col1).subtract(df.select(col2)).count() == 0:\r\n",
+					"            duplicate_cols.append(col2)\r\n",
+					"\r\n",
+					"# Drop duplicate columns\r\n",
+					"df4 = neee_df.drop(*duplicate_cols)\r\n",
+					"\r\n",
+					"# Show the resulting DataFrame after dropping duplicate columns\r\n",
+					"#df4.show(100)\r\n",
+					"liss=[]\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 129
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#neee_df.show()\r\n",
+					"doo =[]\r\n",
+					"doo1 = []\r\n",
+					"boo =[]\r\n",
+					"boo1=[]\r\n",
+					"index_list=neee_df.columns\r\n",
+					"for i  in neee_df.columns:\r\n",
+					"    \r\n",
+					"    if i  not in exists_list:\r\n",
+					"        doo.append(i)\r\n",
+					"        doo1.append(index_list.index(i))\r\n",
+					"    else:\r\n",
+					"        boo.append(i)\r\n",
+					"        boo1.append(index_list.index(i))\r\n",
+					"\r\n",
+					"print(doo1)\r\n",
+					"print(doo)\r\n",
+					"print(boo)\r\n",
+					"print(boo1)\r\n",
+					"ne_jk=[]\r\n",
+					"boat=0\r\n",
+					"half_index = len(boo1) // 2\r\n",
+					"\r\n",
+					"# Slice the original list to get values until the half index and store in another list\r\n",
+					"ne_jk = boo1[:half_index]\r\n",
+					"\r\n",
+					"print(ne_jk)\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 130
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"'''#indices_to_drop = ne_jk # Example: Dropping columns at index positions 1 and 3\r\n",
+					"\r\n",
+					"# Get all column names\r\n",
+					"columns_to_drop_indices = [1,2,3]  # For example, dropping columns at indices 1 and 3 (age and gender)\r\n",
+					"\r\n",
+					"# Check if indices are valid\r\n",
+					"if any(idx >= len(neee_df.columns) for idx in columns_to_drop_indices):\r\n",
+					"    print(idx)\r\n",
+					"    print(\"Invalid column index provided.\")\r\n",
+					"else:\r\n",
+					"    # Get the list of column names to drop\r\n",
+					"    columns_to_drop = [df.columns[i] for i in columns_to_drop_indices]\r\n",
+					"    \r\n",
+					"    # Drop columns based on their indices\r\n",
+					"    df = neee_df.drop(*columns_to_drop)\r\n",
+					"\r\n",
+					"    # Show the resulting DataFrame after dropping columns'''\r\n",
+					"    df.show()"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"neee_df.show()\r\n",
+					"columns_to_drop_indices = [1,2,3]  # For example, dropping columns at indices 1 and 3 (age and gender)\r\n",
+					"\r\n",
+					"# Check if indices are valid\r\n",
+					"if any(idx >= len(neee_df.columns) for idx in columns_to_drop_indices):\r\n",
+					"    \r\n",
+					"    print(\"Invalid column index provided.\")\r\n",
+					"else:\r\n",
+					"    # Get the list of column names to drop\r\n",
+					"    columns_to_drop = [neee_df.columns[i] for i in columns_to_drop_indices]\r\n",
+					"    \r\n",
+					"    # Drop columns based on their indices\r\n",
+					"    neee_df = neee_df.drop(*columns_to_drop)\r\n",
+					"\r\n",
+					"    # Show the resulting DataFrame after dropping columns'''\r\n",
+					"    join_df= neee_df.join(df,)"
+				],
+				"execution_count": 134
 			}
 		]
 	}
