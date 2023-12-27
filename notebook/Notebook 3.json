@@ -1,0 +1,435 @@
+{
+	"name": "Notebook 3",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "mypool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "1ea38e0b-65d0-45d1-a745-bb3c9d741117"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/7374728e-d82a-4420-8e42-c2f7ef16e4c3/resourceGroups/new_rp/providers/Microsoft.Synapse/workspaces/mywp7971/bigDataPools/mypool",
+				"name": "mypool",
+				"type": "Spark",
+				"endpoint": "https://mywp7971.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/mypool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.functions import monotonically_increasing_id\r\n",
+					"my_dict = {'name': '\"', 'school': '//'}\r\n",
+					"my_lis = []\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"# Apply the split_record function to each record using map()\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"# Assuming you have an RDD split_rdd with records split by comma\r\n",
+					"header = split_rdd.first()\r\n",
+					"data_without_rdd = split_rdd.filter(lambda row: row != header)\r\n",
+					"df=spark.createDataFrame(data_without_rdd,header)\r\n",
+					"df = df.withColumn('pri_id',monotonically_increasing_id())\r\n",
+					"my_lis.append(df)\r\n",
+					"\r\n",
+					"def replace_chars_in_list(strings_list, char_to_replace):\r\n",
+					"    modified_list = []\r\n",
+					"    \r\n",
+					"    for string in strings_list:\r\n",
+					"        if isinstance(string,str):\r\n",
+					"            modified_string = (string[:1]+string[1:-1].replcae(char_to_replace,'')+\r\n",
+					"            string[-1:])\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"for key,value in my_dict.items():\r\n",
+					"    if key in header:\r\n",
+					"        index = header.index(key)\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: x[:index]+[replace_chars_in_list([x[index]],value)[0]]+x[index +1:]) if len(x)>index else x)\r\n",
+					"        data_wo_header1 = modified_rdd.filter(lambda row: row != header)\r\n",
+					"        df_new = spark.createDataFrame(data_wo_header1,header)\r\n",
+					"        df_new = df_new.withColumn('pri_id',monotonically_increasing_id())\r\n",
+					"        my_lis.append(df_new)\r\n",
+					"\r\n",
+					"for i in my_lis:\r\n",
+					"    i.show()\r\n",
+					"\r\n",
+					"final_df = my_lis[-1]\r\n",
+					"for df in my_lis[-2::-1]:\r\n",
+					"    lat_df = final_df.join(df,'pri_id','leftsemi')\r\n",
+					"\r\n",
+					"display(final_df)\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import monotonically_increasing_id\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
+					"\r\n",
+					"my_dict = {'name': '\"', 'school': '//'}\r\n",
+					"my_lis = []\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"header = split_rdd.first()\r\n",
+					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
+					"df = spark.createDataFrame(data_without_header, header)\r\n",
+					"df = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"my_lis.append(df)\r\n",
+					"\r\n",
+					"\r\n",
+					"def replace_chars_in_list(strings_list, char_to_replace):\r\n",
+					"    modified_list = []\r\n",
+					"\r\n",
+					"    for string in strings_list:\r\n",
+					"        if isinstance(string, str):\r\n",
+					"            modified_string = string[:1] + string[1:-1].replace(char_to_replace, '') + string[-1]\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    if key in header:\r\n",
+					"        index = header.index(key)\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: x[:index] + replace_chars_in_list([x[index]], value) + x[index + 1:] if len(x) > index else x)\r\n",
+					"        data_wo_header1 = modified_rdd.filter(lambda row: row != header)\r\n",
+					"        df_new = spark.createDataFrame(data_wo_header1, header)\r\n",
+					"        df_new = df_new.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"        my_lis.append(df_new)\r\n",
+					"\r\n",
+					"for i in my_lis:\r\n",
+					"    i.show()\r\n",
+					"\r\n",
+					"final_df = my_lis[-1]\r\n",
+					"for df in my_lis[-2::-1]:\r\n",
+					"    final_df = final_df.join(df, 'pri_id', 'leftsemi')\r\n",
+					"\r\n",
+					"final_df.show()\r\n",
+					""
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import monotonically_increasing_id,col\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
+					"\r\n",
+					"my_dict = {'name': '\"', 'school': '\\\\'}\r\n",
+					"my_lis = []\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"header = split_rdd.first()\r\n",
+					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
+					"df = spark.createDataFrame(data_without_header, header)\r\n",
+					"df = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"def replace_chars_in_list(strings_list, char_to_replace):\r\n",
+					"    modified_list = []\r\n",
+					"\r\n",
+					"    for string in strings_list:\r\n",
+					"        if isinstance(string, str):\r\n",
+					"            modified_string = string[:1] + string[1:-1].replace(char_to_replace, '') + string[-1]\r\n",
+					"            modified_list.append(modified_string)\r\n",
+					"    return modified_list\r\n",
+					"\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    if key in header:\r\n",
+					"        index = header.index(key)\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: x[:index] + replace_chars_in_list([x[index]], value) + x[index + 1:] if len(x) > index else x)\r\n",
+					"        data_wo_header1 = modified_rdd.filter(lambda row: row != header)\r\n",
+					"        df_new = spark.createDataFrame(data_wo_header1, header)\r\n",
+					"        df_new = df_new.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"        df_new = df_new.select(col(key),col('pri_id'))\r\n",
+					"        my_lis.append(df_new)\r\n",
+					"\r\n",
+					"\r\n",
+					"keys_list = list(my_dict.keys())\r\n",
+					"print(keys_list)\r\n",
+					"columns_to_drop_objects = [col(col_name) for col_name in keys_list]\r\n",
+					"print(columns_to_drop_objects)\r\n",
+					"result_df = None\r\n",
+					"for col_name in keys_list:\r\n",
+					"    df = df.drop(col(col_name))\r\n",
+					"my_lis.insert(0,df)\r\n",
+					"for i in my_lis:\r\n",
+					"    i.show(5)\r\n",
+					"for df in my_lis:\r\n",
+					"    if result_df is None:\r\n",
+					"        result_df = df\r\n",
+					"    else:\r\n",
+					"        result_df = result_df.unionByName(df,allowMissingColumns=True)\r\n",
+					"#final_df = my_lis[0]\r\n",
+					"#for df in my_lis[1:]:\r\n",
+					"    #final_df = final_df.join(df, 'pri_id', 'leftsemi')\r\n",
+					"\r\n",
+					"\r\n",
+					"result_df.show()\r\n",
+					""
+				],
+				"execution_count": 53
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import monotonically_increasing_id, col\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
+					"\r\n",
+					"my_dict = {'name': '\"', 'school': '\\\\'}\r\n",
+					"my_lis = []\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"header = split_rdd.first()\r\n",
+					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
+					"df = spark.createDataFrame(data_without_header, header)\r\n",
+					"df = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"#df.show()\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    if key in header:\r\n",
+					"        index = header.index(key)\r\n",
+					"        modified_rdd = split_rdd.map(lambda x: x[:index] + [x[index].replace(value, '')] + x[index + 1:] if len(x) > index else x)\r\n",
+					"        data_wo_header1 = modified_rdd.filter(lambda row: row != header)\r\n",
+					"        df_new = spark.createDataFrame(data_wo_header1, header)\r\n",
+					"        df_new = df_new.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"        df_new = df_new.select(col(key), col('pri_id'))\r\n",
+					"        df_new.printSchema()\r\n",
+					"        my_lis.append(df_new)\r\n",
+					"\r\n",
+					"columns_to_drop = list(my_dict.keys())\r\n",
+					"\r\n",
+					"for col_name in columns_to_drop:\r\n",
+					"    df = df.drop(col_name)\r\n",
+					"df.printSchema()\r\n",
+					"my_lis.insert(0, df)\r\n",
+					"#for i in my_lis:\r\n",
+					"    #i.show(5)\r\n",
+					"df_list = []\r\n",
+					"result_df = None\r\n",
+					"for df in my_lis:\r\n",
+					"    \r\n",
+					"    if result_df is None:\r\n",
+					"        result_df = df\r\n",
+					"    #else:\r\n",
+					"        #result_df = result_df.unionByName(df,allowMissingColumns=True)\r\n",
+					"    else:\r\n",
+					"        final_df = result_df.join(df, 'pri_id', 'right')\r\n",
+					"        df_list.append(final_df)\r\n",
+					"        next_df = final_df\r\n",
+					"        #next_df.show()\r\n",
+					"'''my_df = None\r\n",
+					"for j in df_list:\r\n",
+					"    if my_df is None:\r\n",
+					"        my_df = df\r\n",
+					"    else:\r\n",
+					"        my_df = my_df.unionByName(j,allowMissingColumns=True)'''\r\n",
+					"\r\n",
+					"    \r\n",
+					"\r\n",
+					"\r\n",
+					"final_df.show()\r\n",
+					""
+				],
+				"execution_count": 77
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"final_df.filter(final_df.pri_id == 0).show()"
+				],
+				"execution_count": 68
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"data1 = [(1,'piyush',200000),(2,'sakshi',600000),(2,'sakshi',600000),(3,'sakshi',800000),(4,'ram',400000)]\r\n",
+					"data2 = [(9,'yash',200000),(2,'sakshi',600000),(2,'ruhi',600000),(7,'shawn',800000),(5,'prem',400000)]\r\n",
+					"schema1 = ['id','name','salary']\r\n",
+					"schema2 = ['id','name','new_salary']\r\n",
+					"df_new1= spark.createDataFrame(data1,schema1)\r\n",
+					"df_new2= spark.createDataFrame(data2,schema2)\r\n",
+					"df_new1.show()\r\n",
+					"df_new2.show()\r\n",
+					"lat_df = df_new1.unionByName(df_new2,allowMissingColumns=True) #unionByName is used to merge/union two DFs of different dataframes\r\n",
+					"lat_df.show()"
+				],
+				"execution_count": 64
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import monotonically_increasing_id, col\r\n",
+					"\r\n",
+					"spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
+					"\r\n",
+					"my_dict = {'name': '\"', 'school': '\\\\'}\r\n",
+					"my_lis = []\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"\r\n",
+					"\r\n",
+					"def split_record(record):\r\n",
+					"    return record.split(',')\r\n",
+					"\r\n",
+					"split_rdd = original_rdd.map(split_record)\r\n",
+					"header = split_rdd.first()\r\n",
+					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
+					"df = spark.createDataFrame(data_without_header, header)\r\n",
+					"df = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"my_lis.append(df)\r\n",
+					"\r\n",
+					"\r\n",
+					"def replace_chars_in_list(string, char_to_replace):\r\n",
+					"    if isinstance(string, str):\r\n",
+					"        modified_string = string.replace(char_to_replace, '')\r\n",
+					"        return modified_string\r\n",
+					"    return string\r\n",
+					"\r\n",
+					"\r\n",
+					"base_df = my_lis[0]\r\n",
+					"\r\n",
+					"for key, value in my_dict.items():\r\n",
+					"    if key in header:\r\n",
+					"        df = base_df\r\n",
+					"        index = header.index(key)\r\n",
+					"        replace_func = col(header[index]).cast(\"string\").replace(value, \"\")\r\n",
+					"        df = df.withColumn(header[index], replace_func)\r\n",
+					"        df = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"        my_lis.append(df)\r\n",
+					"        base_df = base_df.join(df, 'pri_id', 'left')\r\n",
+					"\r\n",
+					"base_df.show()\r\n",
+					""
+				],
+				"execution_count": 41
+			}
+		]
+	}
+}
