@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "9b23ccdb-e9be-4c6f-ab94-bdb3a1b7f058"
+				"spark.autotune.trackingId": "40953271-197a-4ad3-907a-920f34b65fc9"
 			}
 		},
 		"metadata": {
@@ -97,7 +97,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 199
+				"execution_count": 213
 			},
 			{
 				"cell_type": "code",
@@ -343,7 +343,7 @@
 				"source": [
 					"final_df.filter(final_df.pri_id == 0).show()"
 				],
-				"execution_count": 68
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -370,7 +370,7 @@
 					"lat_df = df_new1.unionByName(df_new2,allowMissingColumns=True) #unionByName is used to merge/union two DFs of different dataframes\r\n",
 					"lat_df.show()"
 				],
-				"execution_count": 64
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -428,7 +428,7 @@
 					"base_df.show()\r\n",
 					""
 				],
-				"execution_count": 145
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -459,7 +459,7 @@
 					"print(variable_names)\r\n",
 					""
 				],
-				"execution_count": 80
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -477,6 +477,9 @@
 				"source": [
 					"from pyspark.sql.functions import monotonically_increasing_id, col\r\n",
 					"from pyspark.sql import SparkSession\r\n",
+					"import re\r\n",
+					"\r\n",
+					"\r\n",
 					"\r\n",
 					"spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
 					"\r\n",
@@ -484,11 +487,15 @@
 					"my_lis = []\r\n",
 					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
 					"\r\n",
+					"pattern = re.compile(r'(?<=[A-Z]),(?=[A-Z])')\r\n",
 					"\r\n",
-					"def split_record(record):\r\n",
-					"    return record.split(',')\r\n",
+					"# Split the RDD using the defined pattern\r\n",
+					"split_rdd = original_rdd.flatMap(lambda x: pattern.split(x))\r\n",
 					"\r\n",
-					"split_rdd = original_rdd.map(split_record)\r\n",
+					"#def split_record(record):\r\n",
+					"    #return record.split(',')\r\n",
+					"\r\n",
+					"#split_rdd = original_rdd.map(split_record)\r\n",
 					"header = split_rdd.first()\r\n",
 					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
 					"df = spark.createDataFrame(data_without_header, header)\r\n",
@@ -548,7 +555,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 201
+				"execution_count": 228
 			},
 			{
 				"cell_type": "code",
@@ -577,7 +584,7 @@
 					"print(dis_list)\r\n",
 					"print(exists_list)"
 				],
-				"execution_count": null
+				"execution_count": 222
 			},
 			{
 				"cell_type": "code",
@@ -624,7 +631,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 223
 			},
 			{
 				"cell_type": "code",
@@ -659,7 +666,7 @@
 					"    # Show the resulting DataFrame after dropping columns'''\r\n",
 					"    #df.show()"
 				],
-				"execution_count": null
+				"execution_count": 224
 			},
 			{
 				"cell_type": "code",
@@ -695,7 +702,7 @@
 					"    join_df= neee_df.join(fav_df,'pri_id','right')\r\n",
 					"    join_df.show()"
 				],
-				"execution_count": 195
+				"execution_count": 225
 			},
 			{
 				"cell_type": "code",
