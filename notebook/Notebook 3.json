@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1261e86c-e313-4c37-b428-62b5d0ce977e"
+				"spark.autotune.trackingId": "7f1e5a3a-8b00-487b-b185-305bb387ccd2"
 			}
 		},
 		"metadata": {
@@ -428,7 +428,7 @@
 					"base_df.show()\r\n",
 					""
 				],
-				"execution_count": 41
+				"execution_count": 145
 			},
 			{
 				"cell_type": "code",
@@ -491,8 +491,8 @@
 					"split_rdd = original_rdd.map(split_record)\r\n",
 					"header = split_rdd.first()\r\n",
 					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
-					"df = spark.createDataFrame(data_without_header, header)\r\n",
-					"df = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
+					"df1 = spark.createDataFrame(data_without_header, header)\r\n",
+					"df1 = df.withColumn('pri_id', monotonically_increasing_id())\r\n",
 					"#df.show()\r\n",
 					"\r\n",
 					"for key, value in my_dict.items():\r\n",
@@ -509,9 +509,9 @@
 					"columns_to_drop = list(my_dict.keys())\r\n",
 					"\r\n",
 					"for col_name in columns_to_drop:\r\n",
-					"    df = df.drop(col_name)\r\n",
-					"df.printSchema()\r\n",
-					"my_lis.insert(0, df)\r\n",
+					"    df1 = df1.drop(col_name)\r\n",
+					"df1.printSchema()\r\n",
+					"my_lis.insert(0, df1)\r\n",
 					"#for i in my_lis:\r\n",
 					"    #i.show(5)\r\n",
 					"df_list = []\r\n",
@@ -534,7 +534,7 @@
 					"\r\n",
 					"    \r\n",
 					"\r\n",
-					"\r\n",
+					"final_df.show()\r\n",
 					"neee_df = df_list[-1]\r\n",
 					"dis_list = []\r\n",
 					"exists_list =[]\r\n",
@@ -562,7 +562,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 129
+				"execution_count": 146
 			},
 			{
 				"cell_type": "code",
@@ -578,7 +578,7 @@
 					}
 				},
 				"source": [
-					"#neee_df.show()\r\n",
+					"neee_df.show()\r\n",
 					"doo =[]\r\n",
 					"doo1 = []\r\n",
 					"boo =[]\r\n",
@@ -609,7 +609,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 130
+				"execution_count": 143
 			},
 			{
 				"cell_type": "code",
@@ -660,7 +660,7 @@
 					}
 				},
 				"source": [
-					"neee_df.show()\r\n",
+					"#neee_df.show()\r\n",
 					"columns_to_drop_indices = [1,2,3]  # For example, dropping columns at indices 1 and 3 (age and gender)\r\n",
 					"\r\n",
 					"# Check if indices are valid\r\n",
@@ -673,11 +673,13 @@
 					"    \r\n",
 					"    # Drop columns based on their indices\r\n",
 					"    neee_df = neee_df.drop(*columns_to_drop)\r\n",
+					"    neee_df.show()\r\n",
 					"\r\n",
 					"    # Show the resulting DataFrame after dropping columns'''\r\n",
-					"    join_df= neee_df.join(df,)"
+					"    join_df= neee_df.join(df,'pri_id','right')\r\n",
+					"    #join_df.show()"
 				],
-				"execution_count": 134
+				"execution_count": 140
 			}
 		]
 	}
