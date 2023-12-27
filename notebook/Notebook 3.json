@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "fd4e8add-c99e-4a03-a0b5-170208930270"
+				"spark.autotune.trackingId": "9b23ccdb-e9be-4c6f-ab94-bdb3a1b7f058"
 			}
 		},
 		"metadata": {
@@ -97,7 +97,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 1
+				"execution_count": 199
 			},
 			{
 				"cell_type": "code",
@@ -163,7 +163,7 @@
 					"final_df.show()\r\n",
 					""
 				],
-				"execution_count": 13
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -244,7 +244,7 @@
 					"result_df.show()\r\n",
 					""
 				],
-				"execution_count": 53
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -325,7 +325,7 @@
 					"final_df.show()\r\n",
 					""
 				],
-				"execution_count": 77
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -482,7 +482,7 @@
 					"\r\n",
 					"my_dict = {'name': '\"', 'school': '\\\\'}\r\n",
 					"my_lis = []\r\n",
-					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
 					"\r\n",
 					"\r\n",
 					"def split_record(record):\r\n",
@@ -548,7 +548,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 186
+				"execution_count": 201
 			},
 			{
 				"cell_type": "code",
@@ -577,7 +577,7 @@
 					"print(dis_list)\r\n",
 					"print(exists_list)"
 				],
-				"execution_count": 187
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -624,7 +624,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 188
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -659,7 +659,7 @@
 					"    # Show the resulting DataFrame after dropping columns'''\r\n",
 					"    #df.show()"
 				],
-				"execution_count": 189
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -695,7 +695,7 @@
 					"    join_df= neee_df.join(fav_df,'pri_id','right')\r\n",
 					"    join_df.show()"
 				],
-				"execution_count": 190
+				"execution_count": 195
 			},
 			{
 				"cell_type": "code",
