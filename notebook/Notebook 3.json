@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "40953271-197a-4ad3-907a-920f34b65fc9"
+				"spark.autotune.trackingId": "a52aa7df-6765-4b58-8b3c-b9042e7ec541"
 			}
 		},
 		"metadata": {
@@ -40,7 +40,7 @@
 					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.3",
-				"nodeCount": 3,
+				"nodeCount": 10,
 				"cores": 4,
 				"memory": 28,
 				"automaticScaleJobs": false
@@ -120,7 +120,7 @@
 					"\r\n",
 					"my_dict = {'name': '\"', 'school': '//'}\r\n",
 					"my_lis = []\r\n",
-					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_issue.csv\")\r\n",
 					"\r\n",
 					"\r\n",
 					"def split_record(record):\r\n",
@@ -163,7 +163,7 @@
 					"final_df.show()\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -244,7 +244,7 @@
 					"result_df.show()\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -325,7 +325,7 @@
 					"final_df.show()\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -428,7 +428,7 @@
 					"base_df.show()\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -459,7 +459,7 @@
 					"print(variable_names)\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 23
 			},
 			{
 				"cell_type": "code",
@@ -478,24 +478,69 @@
 					"from pyspark.sql.functions import monotonically_increasing_id, col\r\n",
 					"from pyspark.sql import SparkSession\r\n",
 					"import re\r\n",
+					"import csv\r\n",
+					"from io import StringIO\r\n",
 					"\r\n",
 					"\r\n",
 					"\r\n",
-					"spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
+					"#spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
+					"\r\n",
+					"my_dict = {'name': '\"', 'school': '\\\\'}\r\n",
+					"my_lis = []\r\n",
+					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"no = original_rdd.collect()\r\n",
+					"print(no)\r\n",
+					"print(\"-----------------------------------------------------------------------\")\r\n",
+					"def custom_split(line):\r\n",
+					"    # Define a regular expression pattern to match fields separated by commas while ignoring those within quotes\r\n",
+					"    pattern = r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'\r\n",
+					"    \r\n",
+					"    # Use the regular expression pattern to split the line\r\n",
+					"    return re.split(pattern, line)\r\n",
+					"\r\n",
+					"# Apply the custom split function to each line in the RDD\r\n",
+					"split_rdd = original_rdd.map(custom_split)\r\n",
+					"boo = split_rdd.collect()\r\n",
+					"print(boo)\r\n",
+					""
+				],
+				"execution_count": 47
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import monotonically_increasing_id, col\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"import re\r\n",
+					"import csv\r\n",
+					"from io import StringIO\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"#spark = SparkSession.builder.appName(\"DataFrameExample\").getOrCreate()\r\n",
 					"\r\n",
 					"my_dict = {'name': '\"', 'school': '\\\\'}\r\n",
 					"my_lis = []\r\n",
 					"original_rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
 					"\r\n",
-					"pattern = re.compile(r'(?<=[A-Z]),(?=[A-Z])')\r\n",
-					"\r\n",
-					"# Split the RDD using the defined pattern\r\n",
-					"split_rdd = original_rdd.flatMap(lambda x: pattern.split(x))\r\n",
+					"    \r\n",
 					"\r\n",
 					"#def split_record(record):\r\n",
-					"    #return record.split(',')\r\n",
+					"    #return record.split('|')\r\n",
 					"\r\n",
 					"#split_rdd = original_rdd.map(split_record)\r\n",
+					"split_rdd = original_rdd.map(lambda line: line.split('|'))\r\n",
 					"header = split_rdd.first()\r\n",
 					"data_without_header = split_rdd.filter(lambda row: row != header)\r\n",
 					"df = spark.createDataFrame(data_without_header, header)\r\n",
@@ -540,22 +585,12 @@
 					"\r\n",
 					"final_df.show()\r\n",
 					"\r\n",
-					"#duplicate_cols = []\r\n",
-					"#for i, col1 in enumerate(df.columns):\r\n",
-					"    ##for col2 in df.columns[i + 1:]:\r\n",
-					"        #if col1 != col2 and df.select(col1).subtract(df.select(col2)).count() == 0:\r\n",
-					"            #duplicate_cols.append(col2)'''\r\n",
 					"\r\n",
-					"# Drop duplicate columns\r\n",
-					"#df4 = neee_df.drop(*duplicate_cols)\r\n",
-					"\r\n",
-					"# Show the resulting DataFrame after dropping duplicate columns\r\n",
-					"#df4.show()\r\n",
 					"\r\n",
 					"\r\n",
 					""
 				],
-				"execution_count": 228
+				"execution_count": 67
 			},
 			{
 				"cell_type": "code",
@@ -584,7 +619,7 @@
 					"print(dis_list)\r\n",
 					"print(exists_list)"
 				],
-				"execution_count": 222
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -631,7 +666,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 223
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -702,7 +737,70 @@
 					"    join_df= neee_df.join(fav_df,'pri_id','right')\r\n",
 					"    join_df.show()"
 				],
-				"execution_count": 225
+				"execution_count": 18
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"from pyspark import SparkContext\r\n",
+					"\r\n",
+					"def comma_to_hash_split(line):\r\n",
+					"    # Splitting CSV manually to handle quoted fields with commas\r\n",
+					"    parts = []\r\n",
+					"    in_quotes = False\r\n",
+					"    current_part = ''\r\n",
+					"\r\n",
+					"    for char in line:\r\n",
+					"        if char == ',' and not in_quotes:\r\n",
+					"            parts.append(current_part.replace(',', '#'))\r\n",
+					"            current_part = ''\r\n",
+					"        else:\r\n",
+					"            if char == '\"':\r\n",
+					"                in_quotes = not in_quotes\r\n",
+					"            current_part += char\r\n",
+					"\r\n",
+					"    parts.append(current_part.replace(',', '#'))\r\n",
+					"    return parts\r\n",
+					"\r\n",
+					"# Apply the custom function to each line in the RDD\r\n",
+					"converted_rdd = rdd.flatMap(comma_to_hash_split)\r\n",
+					"\r\n",
+					"# Display the resulting RDD after splitting based on hash symbol\r\n",
+					"print(converted_rdd.collect())"
+				],
+				"execution_count": 62
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"rdd = sc.textFile(\"abfss://csvfile@myadls5434.blob.core.windows.net/csv_book.csv\")\r\n",
+					"m = rdd.collect()\r\n",
+					"print(m)"
+				],
+				"execution_count": 65
 			},
 			{
 				"cell_type": "code",
